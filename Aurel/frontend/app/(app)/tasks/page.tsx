@@ -1,7 +1,7 @@
 "use client";
 
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { DependencyGraph } from "@/components/tasks/dependency-graph";
@@ -15,7 +15,7 @@ import type { Task } from "@/lib/types";
 
 const taskGroups = ["frontend", "backend", "data_migration", "integration", "infra"] as const;
 
-export default function TasksPage() {
+function TasksPageContent() {
   const searchParams = useSearchParams();
   const specId = searchParams.get("spec");
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -161,5 +161,13 @@ export default function TasksPage() {
         </div>
       ) : null}
     </div>
+  );
+}
+
+export default function TasksPage() {
+  return (
+    <Suspense fallback={<Skeleton className="h-[520px]" />}>
+      <TasksPageContent />
+    </Suspense>
   );
 }

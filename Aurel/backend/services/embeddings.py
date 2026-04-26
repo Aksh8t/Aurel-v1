@@ -11,11 +11,17 @@ from models.database import AsyncSessionLocal, KnowledgeChunk
 
 load_dotenv()
 
-openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 qdrant_client = QdrantClient(
     host=os.getenv("QDRANT_HOST", "localhost"),
     port=int(os.getenv("QDRANT_PORT", "6333")),
 )
+
+
+def get_openai_client() -> AsyncOpenAI:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not configured.")
+    return AsyncOpenAI(api_key=api_key)
 
 
 def ensure_collection(workspace_id: str) -> str:
@@ -51,7 +57,7 @@ def split_text(text: str, chunk_size: int = 512, overlap: int = 50) -> list[str]
 async def embed_texts(texts: list[str]) -> list[list[float]]:
     if not texts:
         return []
-    response = await openai_client.embeddings.create(model="text-embedding-3-small", input=texts)
+    response = await get_openai_client().embeddings.create(model="text-embedding-3-small", input=texts)
     return [item.embedding for item in response.data]
 
 

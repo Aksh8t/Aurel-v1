@@ -9,7 +9,12 @@ from prompts.system import SYSTEM_PROMPT
 
 load_dotenv()
 
-anthropic_client = AsyncAnthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+def get_anthropic_client() -> AsyncAnthropic:
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise RuntimeError("ANTHROPIC_API_KEY is not configured.")
+    return AsyncAnthropic(api_key=api_key)
 
 
 def extract_json(text: str) -> dict:
@@ -21,7 +26,7 @@ def extract_json(text: str) -> dict:
 
 
 async def stream_text(user_prompt: str, max_tokens: int = 4000) -> AsyncIterator[str]:
-    async with anthropic_client.messages.stream(
+    async with get_anthropic_client().messages.stream(
         model="claude-sonnet-4-20250514",
         max_tokens=max_tokens,
         system=SYSTEM_PROMPT,
@@ -32,7 +37,7 @@ async def stream_text(user_prompt: str, max_tokens: int = 4000) -> AsyncIterator
 
 
 async def generate_json(user_prompt: str, max_tokens: int = 4000) -> dict:
-    response = await anthropic_client.messages.create(
+    response = await get_anthropic_client().messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=max_tokens,
         system=SYSTEM_PROMPT,
